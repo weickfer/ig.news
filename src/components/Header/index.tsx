@@ -7,8 +7,8 @@ export function Header() {
       <div className={styles.headerContent}>
         <img src="/images/logo.svg" alt="Ig.News" />
         <nav>
-          <a href="">Home</a>
-          <a href="" className={styles.active}>Posts</a>
+          <a href="" className={styles.active}>Home</a>
+          <a href="">Posts</a>
         </nav>
 
         <SignInButton />
