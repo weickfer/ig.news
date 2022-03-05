@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth'
 import GithubProvider from 'next-auth/providers/github'
 
-import { fauna, q } from '../../../services/fauna'
+import { faunaClient, q } from '../../../services/fauna'
 
 export default NextAuth({
   providers: [
@@ -20,7 +20,7 @@ export default NextAuth({
       const { email } = user
 
       try {
-        await fauna.query(
+        await faunaClient.query(
           q.If(
             q.Not(
               q.Exists(

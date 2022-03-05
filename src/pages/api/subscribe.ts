@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { getSession } from 'next-auth/react'
 
-import { fauna, q } from './../../services/fauna';
+import { faunaClient, q } from './../../services/fauna';
 import { stripeClient } from '../../services/stripe'
 
 type User = {
@@ -20,7 +20,7 @@ async function SubscriptionRoute(request: NextApiRequest, response: NextApiRespo
 
   const session = await getSession({ req: request })
 
-  const user = await fauna.query<User>(
+  const user = await faunaClient.query<User>(
     q.Get(
       q.Match(
         q.Index('user_by_email'),
@@ -37,7 +37,7 @@ async function SubscriptionRoute(request: NextApiRequest, response: NextApiRespo
       // metadata: {}
     })
 
-    await fauna.query(
+    await faunaClient.query(
       q.Update(
         q.Ref(q.Collection('users'), user.ref.id),
         {
