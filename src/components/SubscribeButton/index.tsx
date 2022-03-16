@@ -1,6 +1,7 @@
-import { useSession, signIn } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
+import { useRouter } from 'next/router'
 import { api } from '../../services/api'
-import { getStripeJSClient } from '../../services/stripe-js'
+import { getStripeJS } from '../../services/stripe-js'
 import styles from './styles.module.scss'
 
 interface SubscribeButtonProps {
@@ -9,6 +10,7 @@ interface SubscribeButtonProps {
 
 export function SubscribeButton({ }: SubscribeButtonProps) {
   const { data: session } = useSession()
+  const router = useRouter()
 
   const handleSubscribe = async () => {
     if (!session) {
@@ -17,11 +19,17 @@ export function SubscribeButton({ }: SubscribeButtonProps) {
       return
     }
 
+    if (session.activeSubscription) {
+      router.push('/posts')
+
+      return
+    }
+
     try {
       const response = await api.post('/subscribe')
       const { sessionId } = response.data
 
-      const stripe = await getStripeJSClient()
+      const stripe = await getStripeJS()
 
       await stripe.redirectToCheckout({ sessionId })
     } catch (error) {
@@ -32,7 +40,7 @@ export function SubscribeButton({ }: SubscribeButtonProps) {
   return (
     <button
       type='button'
-      className={styles.buttonContainer}
+      className={styles.container}
       onClick={handleSubscribe}
     >
       Subscribe now

@@ -1,20 +1,8 @@
-import { stripeClient } from './../../services/stripe';
-import { Readable } from 'stream'
-import { NextApiRequest, NextApiResponse } from 'next'
-import { Stripe } from 'stripe'
+import { NextApiRequest, NextApiResponse } from 'next';
+import { Stripe } from 'stripe';
+import { UnhandledEventError } from './_lib/errors/UnhandledEventError';
 import { saveSubscription } from './_lib/manageSubscription';
-
-async function streamToBuffer(readable: Readable) {
-  const chunks = []
-
-  for await (const chunk of readable) {
-    chunks.push(
-      typeof chunk === 'string' ? Buffer.from(chunk) : chunk
-    )
-  }
-
-  return Buffer.concat(chunks)
-}
+import { validateStripeRequest } from './_lib/validateStripeRequest';
 
 export const config = {
   api: {
@@ -28,19 +16,6 @@ const relevantEvents = new Set([
   'customer.subscription.deleted',
 ])
 
-async function getEvent(request: NextApiRequest) {
-  const buffer = await streamToBuffer(request)
-  const signature = request.headers['stripe-signature']
-
-  const event = stripeClient.webhooks.constructEvent(
-    buffer,
-    signature,
-    process.env.STRIPE_WEBHOOK_SECRET
-  )
-
-  return event
-}
-
 async function WebhookRoute(request: NextApiRequest, response: NextApiResponse) {
   if (request.method !== 'POST') {
     return response
@@ -49,7 +24,7 @@ async function WebhookRoute(request: NextApiRequest, response: NextApiResponse) 
   }
 
   try {
-    const { type, data } = await getEvent(request)
+    const { type, data } = await validateStripeRequest(request)
 
     if (relevantEvents.has(type)) {
       switch (type) {
@@ -73,13 +48,13 @@ async function WebhookRoute(request: NextApiRequest, response: NextApiResponse) 
           )
           break;
         default:
-          throw new Error('Unhandled event.')
+          throw new UnhandledEventError()
       }
     }
 
     return response.json({ ok: true })
   } catch (error) {
-    if (!((error as Error).message === 'Unhandled event.')) {
+    if (!(error instanceof UnhandledEventError)) {
       response.statusCode = 400
     }
 

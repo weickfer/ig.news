@@ -10,7 +10,7 @@ export function SignInButton() {
   return session ? (
     <button
       type='button'
-      className={styles.buttonContainer}
+      className={styles.container}
       onClick={() => signOut()}
     >
       <FaGithub color="#04d361" />
@@ -20,7 +20,7 @@ export function SignInButton() {
   ) : (
     <button
       type='button'
-      className={styles.buttonContainer}
+      className={styles.container}
       onClick={() => signIn('github')}
     >
       <FaGithub color="#eba417" />

@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { getSession } from 'next-auth/react'
 
-import { faunaClient, q } from './../../services/fauna';
-import { stripeClient } from '../../services/stripe'
+import { fauna, q } from './../../services/fauna';
+import { stripe } from '../../services/stripe'
 
 type User = {
   ref: { id: string }
@@ -20,7 +20,7 @@ async function SubscriptionRoute(request: NextApiRequest, response: NextApiRespo
 
   const session = await getSession({ req: request })
 
-  const user = await faunaClient.query<User>(
+  const user = await fauna.query<User>(
     q.Get(
       q.Match(
         q.Index('user_by_email'),
@@ -32,12 +32,12 @@ async function SubscriptionRoute(request: NextApiRequest, response: NextApiRespo
   let stripeCustomerId: string;
 
   if (!user.data.stripe_customer_id) {
-    const stripeCustomer = await stripeClient.customers.create({
+    const stripeCustomer = await stripe.customers.create({
       email: session.user.email,
       // metadata: {}
     })
 
-    await faunaClient.query(
+    await fauna.query(
       q.Update(
         q.Ref(q.Collection('users'), user.ref.id),
         {
@@ -51,7 +51,7 @@ async function SubscriptionRoute(request: NextApiRequest, response: NextApiRespo
     stripeCustomerId = stripeCustomer.id
   }
 
-  const checkoutSession = await stripeClient.checkout.sessions.create({
+  const checkoutSession = await stripe.checkout.sessions.create({
     customer: stripeCustomerId,
     success_url: process.env.STRIPE_SUCCESS_URL,
     cancel_url: process.env.STRIPE_CANCEL_URL,
