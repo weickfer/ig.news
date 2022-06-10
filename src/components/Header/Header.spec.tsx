@@ -11,7 +11,7 @@ jest.mock('next-auth/react', () => ({
   useSession: () => ({ data: undefined }),
 }))
 
-describe('Header', () => {
+describe('Header Component', () => {
   it('renders correctly', () => {
     const { getByText } = render(<Header />)
   
