@@ -3,6 +3,8 @@ import { SessionProvider } from 'next-auth/react'
 import { Header } from '../components/Header'
 import '../styles/globals.scss'
 
+// Autoriza ai vercell KKKK
+
 function MyApp({
   Component,
   pageProps: { session, ...pageProps }
