@@ -53,8 +53,8 @@ async function SubscriptionRoute(request: NextApiRequest, response: NextApiRespo
 
   const checkoutSession = await stripe.checkout.sessions.create({
     customer: stripeCustomerId,
-    success_url: process.env.STRIPE_SUCCESS_URL,
-    cancel_url: process.env.STRIPE_CANCEL_URL,
+    success_url: `${process.env.APP_URL}/posts`,
+    cancel_url: process.env.APP_URL,
     payment_method_types: ['card'],
     billing_address_collection: 'required',
     line_items: [
